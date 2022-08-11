@@ -5,11 +5,6 @@ const mongoose = require("mongoose");
 const path = require("path");
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGO_CRED, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-
 const server = app.listen(4000, () => console.log("connected"));
 
 const whitelist = ["http://localhost:3000"];

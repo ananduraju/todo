@@ -94,6 +94,7 @@ export default function Main({ name }) {
   const [firstLoad, setFirstLoad] = useState(true);
   const [firstLoadTodo, setFirstLoadTodo] = useState(true);
   const [anim1, setAnim1] = useState(false);
+  const [addItem, setAddItem] = useState(false);
 
   //   const { loading, error, data } = useQuery(GET_USERS);
   const query = useQuery(GET_USER, {
@@ -123,7 +124,7 @@ export default function Main({ name }) {
     }
   };
 
-  const Todo = ({ todo, index, reload }) => {
+  const Todo = ({ todo, index, reload, animation }) => {
     const [visible, setVisible] = useState(false);
     const [anim, setAnim] = useState(false);
 
@@ -132,9 +133,6 @@ export default function Main({ name }) {
       background: anim ? "red" : "green",
       config: { duration: 800, easing: easings.easeInOutQuint },
     });
-    // useEffect(()=>{
-
-    // },[firstLoadTodo])
 
     useEffect(() => {
       console.log("firstLoadTodo", firstLoadTodo);
@@ -144,13 +142,17 @@ export default function Main({ name }) {
       if (firstLoadTodo) {
         setAnim(true);
       }
+      if (animation) {
+        console.log("here here");
+        setAnim(true);
+      }
     }, []);
     return (
       <animated.div
         key={index}
         style={{
           display: checkDisplay(todo),
-          scale: firstLoadTodo ? props.scale : 1,
+          scale: firstLoadTodo ? props.scale : animation ? props.scale : 1,
           //   background: props.background,
         }}
         onMouseEnter={() => setVisible(true)}
@@ -192,10 +194,15 @@ export default function Main({ name }) {
               edge="end"
               style={{ display: visible ? "flex" : "none" }}
               onClick={() => {
+                // setAddItem(true);
+                setAnim(false);
+                // setTimeout(() => {
                 let temp = todos.filter((t) => t.name !== todo.name);
                 console.log(temp);
                 setTodoFetch(true);
                 setTodos(temp);
+                // setAddItem(false);
+                // }, 800);
               }}
             >
               <Clear />
@@ -238,6 +245,7 @@ export default function Main({ name }) {
     if (query.data) {
       console.log(query.data);
       firstLoad && setTodos(JSON.parse(query.data.users[0].todos));
+      // setTodos(JSON.parse(query.data.users[0].todos));
     }
   }, [query.data]);
 
@@ -293,6 +301,10 @@ export default function Main({ name }) {
               id="filled-adornment-password"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
+                  setAddItem(true);
+                  setTimeout(() => {
+                    setAddItem(false);
+                  }, 700);
                   console.log("enter", e.target.value);
                   let temp = e.target.value;
                   setTodos((p) => [...p, { name: temp, completed: false }]);
@@ -354,7 +366,18 @@ export default function Main({ name }) {
               }}
             >
               {todos.map((todo, index) => (
-                <Todo todo={todo} index={index} reload={reload} />
+                <Todo
+                  todo={todo}
+                  index={index}
+                  reload={reload}
+                  animation={
+                    index === todos.length - 1
+                      ? addItem
+                        ? true
+                        : false
+                      : false
+                  }
+                />
               ))}
               {todos.length > 0 ? (
                 <div

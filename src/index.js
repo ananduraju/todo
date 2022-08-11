@@ -10,8 +10,7 @@ import {
   HttpLink,
 } from "@apollo/client";
 
-let authToken =
-  "Bq35uoQHCyx88k63zaDg18HtgWMzQqvYBCg5Dq89f0UiQzUqvltgOKOfdFPUdMk6";
+import { authToken } from "./elements/token";
 
 const client = new ApolloClient({
   link: new HttpLink({
