@@ -88,6 +88,7 @@ const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
 export default function Main({ name }) {
   const [todos, setTodos] = useState([]);
+  const [tempData, setTempData] = useState([]);
   const [buttonState, setButtonState] = useState([true, false, false]);
   const [todoFetch, setTodoFetch] = useState(false);
   const [clearCompleted, setClearCompleted] = useState(false);
@@ -108,7 +109,7 @@ export default function Main({ name }) {
   //   const { loading, error, data } = useQuery(GET_USERS);
   const query = useQuery(GET_USER, {
     variables: { name: "test" },
-    pollInterval: 2000,
+    // pollInterval: 2000,
   });
 
   const [addTodo, mutation] = useMutation(ADD_TODO);
@@ -256,6 +257,7 @@ export default function Main({ name }) {
 
   useEffect(() => {
     if (query.data) {
+      setTempData(JSON.parse(query.data.users[0].todos));
       console.log(query.data);
       firstLoad && setTodos(JSON.parse(query.data.users[0].todos));
       // setTodos(JSON.parse(query.data.users[0].todos));
@@ -263,6 +265,11 @@ export default function Main({ name }) {
   }, [query.data]);
 
   useEffect(() => {
+    setInterval(async () => {
+      let data = await query.refetch({ name: "test" });
+      console.log("data", data);
+      setTodos(JSON.parse(data.data.users[0].todos));
+    }, 5000);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
