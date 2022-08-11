@@ -38,6 +38,7 @@ import {
 } from "@mui/icons-material";
 import { useQuery, gql, useMutation } from "@apollo/client";
 import { useSpring, animated, easings } from "react-spring";
+import getWindowDimensions from "./windowDimensions";
 
 const GET_USERS = gql`
   query GetUsers {
@@ -96,6 +97,14 @@ export default function Main({ name }) {
   const [anim1, setAnim1] = useState(false);
   const [addItem, setAddItem] = useState(false);
 
+  const [windowDimensions, setWindowDimensions] = useState(
+    getWindowDimensions()
+  );
+
+  useEffect(() => {
+    console.log("width", windowDimensions.width);
+  }, [windowDimensions]);
+
   //   const { loading, error, data } = useQuery(GET_USERS);
   const query = useQuery(GET_USER, {
     variables: { name: "test" },
@@ -122,6 +131,10 @@ export default function Main({ name }) {
         return "none";
       }
     }
+  };
+
+  const handleResize = () => {
+    setWindowDimensions(getWindowDimensions());
   };
 
   const Todo = ({ todo, index, reload, animation }) => {
@@ -249,6 +262,11 @@ export default function Main({ name }) {
     }
   }, [query.data]);
 
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   if (query.loading)
     return (
       <div
@@ -293,7 +311,13 @@ export default function Main({ name }) {
           >
             TODOS
           </Typography>
-          <FormControl sx={{ m: 1, width: "35vw" }} variant="filled">
+          <FormControl
+            sx={{
+              m: 1,
+              width: windowDimensions.width <= 950 ? "90vw" : "35vw",
+            }}
+            variant="filled"
+          >
             <InputLabel htmlFor="filled-adornment-password">
               What needs to be done?
             </InputLabel>
@@ -360,7 +384,7 @@ export default function Main({ name }) {
               elevation={3}
               style={{
                 height: "auto",
-                width: "35vw",
+                width: windowDimensions.width <= 950 ? "90vw" : "35vw",
                 marginTop: "2%",
                 overflowY: "scroll",
               }}
