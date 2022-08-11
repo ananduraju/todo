@@ -88,9 +88,7 @@ const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
 export default function Main({ name }) {
   const [todos, setTodos] = useState([]);
-  const [tempData, setTempData] = useState([]);
   const [buttonState, setButtonState] = useState([true, false, false]);
-  const [todoFetch, setTodoFetch] = useState(false);
   const [clearCompleted, setClearCompleted] = useState(false);
   const [reload, setReload] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
@@ -192,7 +190,6 @@ export default function Main({ name }) {
                 let temp = todos;
                 temp[index].completed = !temp[index].completed;
                 setTodos([...temp]);
-                setTodoFetch(true);
               }}
             />
             <ListItemText
@@ -213,7 +210,6 @@ export default function Main({ name }) {
                 // setTimeout(() => {
                 let temp = todos.filter((t) => t.name !== todo.name);
                 console.log(temp);
-                setTodoFetch(true);
                 setTodos(temp);
                 // setAddItem(false);
                 // }, 800);
@@ -238,17 +234,13 @@ export default function Main({ name }) {
     if (count === todos.length) {
       setClearCompleted(true);
     } else setClearCompleted(false);
-    if (todoFetch) {
-      addTodo({
-        variables: { todo: JSON.stringify(todos) },
-        onCompleted: () => setTodoFetch(false),
-      });
-      console.log("todoFetch", todoFetch);
-    }
+    addTodo({
+      variables: { todo: JSON.stringify(todos) },
+      // onCompleted: () => setTodoFetch(false),
+    });
   }, [todos]);
 
   useEffect(() => {
-    console.log("todoFetch", todoFetch);
     if (!query.loading) {
       setFirstLoad(false);
       setAnim1(true);
@@ -257,7 +249,6 @@ export default function Main({ name }) {
 
   useEffect(() => {
     if (query.data) {
-      setTempData(JSON.parse(query.data.users[0].todos));
       console.log(query.data);
       firstLoad && setTodos(JSON.parse(query.data.users[0].todos));
       // setTodos(JSON.parse(query.data.users[0].todos));
@@ -339,7 +330,6 @@ export default function Main({ name }) {
                   console.log("enter", e.target.value);
                   let temp = e.target.value;
                   setTodos((p) => [...p, { name: temp, completed: false }]);
-                  setTodoFetch(true);
                   e.target.value = "";
                 }
               }}
@@ -361,7 +351,6 @@ export default function Main({ name }) {
                           t.completed = false;
                         });
                         setReload(!reload);
-                        setTodoFetch(true);
                         setTodos([...temp]);
                         return;
                       }
@@ -370,7 +359,6 @@ export default function Main({ name }) {
                       });
                       console.log("after", count);
                       setReload(!reload);
-                      setTodoFetch(true);
                       setTodos([...temp]);
                     }}
                     edge="end"
@@ -471,7 +459,6 @@ export default function Main({ name }) {
                       onClick={() => {
                         let temp = todos.filter((todo) => !todo.completed);
                         console.log(temp);
-                        setTodoFetch(true);
                         setTodos(temp);
                       }}
                     >
