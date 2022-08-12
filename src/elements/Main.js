@@ -23,6 +23,8 @@ import {
   ListItem,
   Checkbox,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
@@ -88,6 +90,7 @@ const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
 export default function Main({ name }) {
   const [todos, setTodos] = useState([]);
+  const [todosTemp, setTodosTemp] = useState([]);
   const [buttonState, setButtonState] = useState([true, false, false]);
   const [clearCompleted, setClearCompleted] = useState(false);
   const [reload, setReload] = useState(false);
@@ -95,14 +98,13 @@ export default function Main({ name }) {
   const [firstLoadTodo, setFirstLoadTodo] = useState(true);
   const [anim1, setAnim1] = useState(false);
   const [addItem, setAddItem] = useState(false);
-
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [severity, setSeverity] = useState("warning");
+  const [snackMsg, setSnackMsg] = useState("");
+  const [loading, setLoading] = useState(false);
   const [windowDimensions, setWindowDimensions] = useState(
     getWindowDimensions()
   );
-
-  useEffect(() => {
-    console.log("width", windowDimensions.width);
-  }, [windowDimensions]);
 
   //   const { loading, error, data } = useQuery(GET_USERS);
   const query = useQuery(GET_USER, {
@@ -118,6 +120,10 @@ export default function Main({ name }) {
   });
 
   let navigate = useNavigate();
+
+  const handleSnackClose = () => {
+    setSnackOpen(false);
+  };
 
   const checkDisplay = (val) => {
     if (buttonState[1]) {
@@ -147,7 +153,7 @@ export default function Main({ name }) {
     });
 
     useEffect(() => {
-      console.log("firstLoadTodo", firstLoadTodo);
+      // console.log("firstLoadTodo", firstLoadTodo);
       setTimeout(() => {
         setFirstLoadTodo(false);
       }, 1000);
@@ -155,7 +161,6 @@ export default function Main({ name }) {
         setAnim(true);
       }
       if (animation) {
-        console.log("here here");
         setAnim(true);
       }
     }, []);
@@ -190,6 +195,7 @@ export default function Main({ name }) {
                 let temp = todos;
                 temp[index].completed = !temp[index].completed;
                 setTodos([...temp]);
+                setTodosTemp([...temp]);
               }}
             />
             <ListItemText
@@ -209,8 +215,8 @@ export default function Main({ name }) {
                 setAnim(false);
                 // setTimeout(() => {
                 let temp = todos.filter((t) => t.name !== todo.name);
-                console.log(temp);
                 setTodos(temp);
+                setTodosTemp(temp);
                 // setAddItem(false);
                 // }, 800);
               }}
@@ -225,6 +231,7 @@ export default function Main({ name }) {
   };
 
   useEffect(() => {
+    setLoading(false);
     let count = 0;
     todos.forEach((todo) => {
       if (!todo.completed) {
@@ -249,17 +256,29 @@ export default function Main({ name }) {
 
   useEffect(() => {
     if (query.data) {
-      console.log(query.data);
+      // console.log(query.data);
       firstLoad && setTodos(JSON.parse(query.data.users[0].todos));
+      firstLoad && setTodosTemp(JSON.parse(query.data.users[0].todos));
       // setTodos(JSON.parse(query.data.users[0].todos));
     }
   }, [query.data]);
 
   useEffect(() => {
+    console.log(JSON.stringify(todosTemp), JSON.stringify(todos));
+    if (JSON.stringify(todosTemp) !== JSON.stringify(todos)) {
+      setSnackOpen(true);
+      setSeverity("warning");
+      setSnackMsg("Changes made! refreshing");
+      setLoading(true);
+      setTodos([...todosTemp]);
+    }
+  }, [todosTemp]);
+
+  useEffect(() => {
     setInterval(async () => {
       let data = await query.refetch({ name: "test" });
-      console.log("data", data);
-      setTodos(JSON.parse(data.data.users[0].todos));
+      console.log("interval");
+      setTodosTemp(JSON.parse(data.data.users[0].todos));
     }, 5000);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -287,6 +306,19 @@ export default function Main({ name }) {
           background: "linear-gradient(to right top,ghostwhite,floralwhite)",
         }}
       >
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackClose}
+        >
+          <Alert
+            onClose={handleSnackClose}
+            severity={severity}
+            sx={{ width: "100%" }}
+          >
+            {snackMsg}
+          </Alert>
+        </Snackbar>
         <animated.div
           style={{
             width: "100vw",
@@ -330,6 +362,7 @@ export default function Main({ name }) {
                   console.log("enter", e.target.value);
                   let temp = e.target.value;
                   setTodos((p) => [...p, { name: temp, completed: false }]);
+                  setTodosTemp((p) => [...p, { name: temp, completed: false }]);
                   e.target.value = "";
                 }
               }}
@@ -352,6 +385,7 @@ export default function Main({ name }) {
                         });
                         setReload(!reload);
                         setTodos([...temp]);
+                        setTodosTemp([...temp]);
                         return;
                       }
                       temp.forEach((t) => {
@@ -360,6 +394,7 @@ export default function Main({ name }) {
                       console.log("after", count);
                       setReload(!reload);
                       setTodos([...temp]);
+                      setTodosTemp([...temp]);
                     }}
                     edge="end"
                   >
@@ -369,106 +404,111 @@ export default function Main({ name }) {
               }
             />
           </FormControl>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Paper
-              elevation={3}
-              style={{
-                height: "auto",
-                width: windowDimensions.width <= 950 ? "90vw" : "35vw",
-                marginTop: "2%",
-                overflowY: "scroll",
+          {!loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
               }}
             >
-              {todos.map((todo, index) => (
-                <Todo
-                  todo={todo}
-                  index={index}
-                  reload={reload}
-                  animation={
-                    index === todos.length - 1
-                      ? addItem
-                        ? true
+              <Paper
+                elevation={3}
+                style={{
+                  height: "auto",
+                  width: windowDimensions.width <= 950 ? "90vw" : "35vw",
+                  marginTop: "2%",
+                  overflowY: "scroll",
+                }}
+              >
+                {todos.map((todo, index) => (
+                  <Todo
+                    todo={todo}
+                    index={index}
+                    reload={reload}
+                    animation={
+                      index === todos.length - 1
+                        ? addItem
+                          ? true
+                          : false
                         : false
-                      : false
-                  }
-                />
-              ))}
-              {todos.length > 0 ? (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-evenly",
-                    paddingBottom: "2%",
-                  }}
-                >
-                  <ThemeProvider theme={theme}>
-                    <Typography
-                      color="#696969"
-                      sx={{ fontSize: ".7rem", paddingLeft: "2%" }}
-                    >
-                      {todos.length} {todos.length !== 1 ? "items" : "item"}{" "}
-                      left
-                    </Typography>
+                    }
+                  />
+                ))}
+                {todos.length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      paddingBottom: "2%",
+                    }}
+                  >
+                    <ThemeProvider theme={theme}>
+                      <Typography
+                        color="#696969"
+                        sx={{ fontSize: ".7rem", paddingLeft: "2%" }}
+                      >
+                        {todos.length} {todos.length !== 1 ? "items" : "item"}{" "}
+                        left
+                      </Typography>
 
-                    <ButtonGroup
-                      variant="text"
-                      aria-label="outlined primary button group"
-                      color="primary"
-                    >
+                      <ButtonGroup
+                        variant="text"
+                        aria-label="outlined primary button group"
+                        color="primary"
+                      >
+                        <Button
+                          sx={{
+                            fontSize: ".7rem",
+                            color: buttonState[0] ? "coral" : "primary",
+                          }}
+                          onClick={() => setButtonState([true, false, false])}
+                        >
+                          All
+                        </Button>
+                        <Button
+                          sx={{
+                            fontSize: ".7rem",
+                            color: buttonState[1] ? "coral" : "primary",
+                          }}
+                          onClick={() => setButtonState([false, true, false])}
+                        >
+                          Active
+                        </Button>
+                        <Button
+                          sx={{
+                            fontSize: ".7rem",
+                            color: buttonState[2] ? "coral" : "primary",
+                          }}
+                          onClick={() => setButtonState([false, false, true])}
+                        >
+                          Completed
+                        </Button>
+                      </ButtonGroup>
                       <Button
                         sx={{
                           fontSize: ".7rem",
-                          color: buttonState[0] ? "coral" : "primary",
+                          color: "primary",
                         }}
-                        onClick={() => setButtonState([true, false, false])}
-                      >
-                        All
-                      </Button>
-                      <Button
-                        sx={{
-                          fontSize: ".7rem",
-                          color: buttonState[1] ? "coral" : "primary",
+                        disabled={clearCompleted}
+                        onClick={() => {
+                          let temp = todos.filter((todo) => !todo.completed);
+                          console.log(temp);
+                          setTodos(temp);
+                          setTodosTemp(temp);
                         }}
-                        onClick={() => setButtonState([false, true, false])}
                       >
-                        Active
+                        Clear Completed
                       </Button>
-                      <Button
-                        sx={{
-                          fontSize: ".7rem",
-                          color: buttonState[2] ? "coral" : "primary",
-                        }}
-                        onClick={() => setButtonState([false, false, true])}
-                      >
-                        Completed
-                      </Button>
-                    </ButtonGroup>
-                    <Button
-                      sx={{
-                        fontSize: ".7rem",
-                        color: "primary",
-                      }}
-                      disabled={clearCompleted}
-                      onClick={() => {
-                        let temp = todos.filter((todo) => !todo.completed);
-                        console.log(temp);
-                        setTodos(temp);
-                      }}
-                    >
-                      Clear Completed
-                    </Button>
-                  </ThemeProvider>
-                </div>
-              ) : null}
-            </Paper>
-          </Box>
+                    </ThemeProvider>
+                  </div>
+                ) : null}
+              </Paper>
+            </Box>
+          ) : (
+            <CircularProgress style={{ margin: "10%" }} />
+          )}
         </animated.div>
       </div>
     );
