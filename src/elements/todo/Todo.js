@@ -40,7 +40,7 @@ import {
 } from "@mui/icons-material";
 import { useQuery, gql, useMutation } from "@apollo/client";
 import { useSpring, animated, easings } from "react-spring";
-import getWindowDimensions from "./windowDimensions";
+import getWindowDimensions from "../../custom/windowDimensions";
 
 const GET_USERS = gql`
   query GetUsers {
@@ -88,7 +88,7 @@ const theme = createTheme({
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
-export default function Main({ name }) {
+export default function Todo() {
   const [todos, setTodos] = useState([]);
   const [todosTemp, setTodosTemp] = useState([]);
   const [buttonState, setButtonState] = useState([true, false, false]);
