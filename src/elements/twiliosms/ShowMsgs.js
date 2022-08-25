@@ -56,36 +56,51 @@ export default function ShowMsgs({ show, setShow, msg }) {
         <DialogTitle>{"Previous messages"}</DialogTitle>
         <DialogContent>
           <div style={{ height: "30vh" }}>
-            {messages.reverse().map((message, index) => {
-              return (
-                <div key={index}>
-                  <Typography variant="h5" component="div">
-                    {message.date}
-                  </Typography>
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    message: {message.log}
-                  </Typography>
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    phone: {message.phone}
-                  </Typography>
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    name: {message.name}
-                  </Typography>
-                </div>
-              );
-            })}
+            {messages.length !== 0 ? (
+              messages.reverse().map((message, index) => {
+                return (
+                  <div key={index}>
+                    <Typography variant="h5" component="div">
+                      {message.date}
+                    </Typography>
+                    <Typography
+                      sx={{ fontSize: 14 }}
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      message: {message.log}
+                    </Typography>
+                    <Typography
+                      sx={{ fontSize: 14 }}
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      phone: {message.phone}
+                    </Typography>
+                    <Typography
+                      sx={{ fontSize: 14 }}
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      name: {message.name}
+                    </Typography>
+                  </div>
+                );
+              })
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                  color: "gray",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography>No messages</Typography>
+              </div>
+            )}
           </div>
         </DialogContent>
         <DialogActions>

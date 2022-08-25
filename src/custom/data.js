@@ -1,5 +1,5 @@
-export const url = "http://ec2-3-145-162-172.us-east-2.compute.amazonaws.com:4000";
-// export const url = "http://192.168.1.100:4000";
+export const url = "http://ec2-3-145-162-172.us-east-2.compute.amazonaws.com:5000";
+// export const url = "http://192.168.1.101:4000";
 export const contacts = [
   {
     first: "Anandu",

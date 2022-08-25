@@ -1,32 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  ButtonGroup,
-  Stack,
-  IconButton,
-  Divider,
-  Box,
-  Paper,
-  CardContent,
-  CardActions,
-  Card,
-  TextField,
-  Typography,
-  InputAdornment,
-  OutlinedInput,
-  FormControl,
-  InputLabel,
-  FilledInput,
-  List,
-  ListItemText,
-  ListItem,
-  Checkbox,
-  CircularProgress,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import { Person } from "@mui/icons-material";
+import { Button, Paper, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useSpring, animated, easings } from "react-spring";
 import getWindowDimensions from "../../custom/windowDimensions";
@@ -124,7 +98,9 @@ export default function TwilioSms() {
             zIndex: 2,
           }}
         >
-          {showMsgs && <ShowMsgs show={showMsgs} setShow={setShowMsgs} msg={message} />}
+          {showMsgs && (
+            <ShowMsgs show={showMsgs} setShow={setShowMsgs} msg={message} />
+          )}
           <Typography
             style={{
               color: "rebeccapurple",
