@@ -1,3 +1,4 @@
+//this node js file acts as server for 3 projects (todo , twiliosms , upload)
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -13,6 +14,7 @@ const url = "http://ec2-3-145-162-172.us-east-2.compute.amazonaws.com:5000";
 
 // const url = "http://192.168.1.101:3000";
 
+//function to execute linux commands through node js
 const execute = (command) => {
   exec(command, (error, stdout, stderr) => {
     if (error) {
@@ -27,9 +29,12 @@ const execute = (command) => {
   });
 };
 
+//project twiliosms
 const client = require("twilio")(accountSid, authToken, {
   lazyLoading: true,
 });
+
+//multer file storage parameters
 const DIR = "./build/images";
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -79,53 +84,47 @@ app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
+//post request for project upload
 app.post("/sendImages", upload.array("File"), (req, res) => {
-  console.log("sendImages", req.body);
-  res.json({ msg: "hello" });
+  res.json({ msg: "success" });
 });
 
+//post request for project upload
 app.post("/deleteImages", (req, res) => {
-  console.log(req.body);
   execute("cd build/images && rm -rf *");
   res.json({ msg: "images deleted" });
 });
 
+//post request for project upload
 app.post("/checkImages", (req, res) => {
-  console.log( 'check images', req.body);
   const directoryPath = path.join("./build", "images");
-
   fs.readdir(directoryPath, function (err, files) {
     if (err) {
-      console.log("Unable to scan directory: " + err);
       return res.json({ msg: "failed" });
     }
-    files.forEach(function (file) {
-      console.log(file);
-    });
     res.json({ msg: files });
   });
 });
 
+//post request for project twiliosms
 app.post("/viewMsgs", (req, res) => {
-  console.log("viewmsgs");
   let logs;
   fs.readFile("logs.txt", "utf-8", (err, data) => {
     if (err) {
       res.json({ msg: "error" });
       return;
     }
-    // console.log(data);
     logs = data;
     res.json({ msg: logs });
   });
 });
 
+//post request for project twiliosms
 app.post("/sms", (req, res) => {
   let registeredPhone = "+919447292708";
   let date = new Date();
   const { msg, phone } = req.body;
   if (phone === registeredPhone) {
-    // console.log("sms", msg);
     let log = `{"log":"${msg}","phone":"${phone}","date":"${date.toLocaleString(
       "en-US",
       {
@@ -145,12 +144,10 @@ app.post("/sms", (req, res) => {
         to: registeredPhone,
       })
       .then((message) => {
-        console.log(message);
         res.json({ msg: "success" });
       })
       .done();
     return;
   }
-  // console.log("invalid phone");
   res.json({ msg: "failed" });
 });
